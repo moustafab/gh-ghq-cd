@@ -20,15 +20,21 @@ function check() {
 }
 
 function choose() {
+  local target="${1}"
   local cc="cat"
   if exist_command "bat"; then
     cc="bat"
   fi
-  ghq list --full-path | fzf --reverse --preview "${cc} {1}/README.md"
+  local args
+  if [ -z ${target} ]; then
+    ghq list | fzf --reverse --preview "${cc} {1}/README.md" | xargs printf "%s/%s" $(ghq root)
+  else
+    ghq list --full-path | fzf --reverse -f ${target} -1 -0 -e | head -n 1
+  fi
 }
 
 check
-selected="$(choose)"
+selected="$(choose ${1})"
 [ -n "${selected}" ] || exit 1
 \cd ${selected}
 $SHELL
